@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FROZEN SIGNER — UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115;
+    --glass: rgba(255,255,255,0.06);
+    --glass-2: rgba(255,255,255,0.035);
+    --accent:#73e6ff;
+    --muted:#9aa6b2;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+  body{margin:0;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(115,230,255,0.06), transparent 8%),
+    radial-gradient(900px 500px at 90% 80%, rgba(191,96,255,0.03), transparent 8%),
+    var(--bg); min-height:100vh;color:#e6eef6}
+  .app{max-width:1100px;margin:36px auto;padding:28px;border-radius:18px;
+       background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+       box-shadow: 0 6px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+       border:1px solid rgba(255,255,255,0.03)}
+  .header{display:flex;align-items:center;gap:16px}
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--glass),var(--glass-2));
+        display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);font-size:18px;border:1px solid rgba(255,255,255,0.04)}
+  h1{margin:0;font-size:20px}
+  .tabs{display:flex;gap:12px;margin-top:18px}
+  .tab{padding:10px 14px;border-radius:10px;background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer}
+  .tab.active{background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));border-color:rgba(255,255,255,0.03);color:#e6eef6}
+  .pane{margin-top:18px}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+  .card{background:linear-gradient(180deg,var(--glass), transparent);border-radius:12px;padding:14px;border:1px solid rgba(255,255,255,0.03)}
+  .muted{color:var(--muted);font-size:13px}
+  input[type=file]{background:transparent}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(90deg,var(--accent),#a7fffa);color:#012; font-weight:600}
+  .small{padding:8px 10px;font-size:13px;border-radius:8px}
+  .list{max-height:260px;overflow:auto;margin-top:8px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.18)}
+  .list-item{display:flex;justify-content:space-between;padding:8px;border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,0.01)}
+  .meta{font-size:12px;color:var(--muted)}
+  .status{font-size:12px;padding:6px 8px;border-radius:8px;background:rgba(0,0,0,0.25);color:var(--muted)}
+  .preview{height:120px;background:linear-gradient(135deg, rgba(255,255,255,0.02), transparent);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+  .field{margin:8px 0}
+  .row{display:flex;gap:8px}
+  footer{margin-top:18px;font-size:12px;color:var(--muted);text-align:right}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">FZ</div>
+    <div>
+      <h1>FROZEN SIGNER</h1>
+      <div class="muted">Multi-certificate IPA signer — Liquid glass UI</div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Main tabs">
+    <button class="tab active" data-tab="repo">Repository</button>
+    <button class="tab" data-tab="signer">Signer</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </div>
+
+  <div class="pane">
+    <!-- REPO -->
+    <div id="repo" class="tabpane">
+      <div class="grid">
+        <div class="card">
+          <h3>1) GitHub repository (optional)</h3>
+          <div class="muted">Paste a GitHub repository URL and path to an .ipa inside the repo to allow users to download a raw IPA directly.</div>
+          <div class="field">
+            <input id="repo_url" placeholder="https://github.com/owner/repo" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef6">
+          </div>
+          <div class="field">
+            <input id="repo_path" placeholder="path/to/app.ipa" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef6">
+          </div>
+          <div class="row">
+            <button id="registerRepo" class="btn">Register Repo</button>
+            <div id="repoMsg" class="muted" style="align-self:center"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Preview</h3>
+          <div class="preview" id="repoPreview">No repo registered</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNER -->
+    <div id="signer" class="tabpane" style="display:none">
+      <div class="grid">
+        <div>
+          <div class="card">
+            <h3>2) Upload assets</h3>
+            <div class="muted">Upload IPA, certificates (.p12) and provisioning profile. Upload multiple .p12 files to keep several certificates available.</div>
+            <div class="field">
+              <label class="muted">Upload IPA</label><br>
+              <input id="ipaFile" type="file" accept=".ipa">
+              <button id="btnUploadIpa" class="small btn" style="margin-left:8px">Upload IPA</button>
+            </div>
+            <div class="field">
+              <label class="muted">Upload P12 (cert)</label><br>
+              <input id="p12File" type="file" accept=".p12,.pfx">
+              <input id="p12pass" placeholder="p12 password (if any)" style="padding:8px;border-radius:8px;margin-left:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#e6eef6">
+              <button id="btnUploadP12" class="small btn" style="margin-left:8px">Upload Cert</button>
+            </div>
+            <div class="field">
+              <label class="muted">Upload .mobileprovision</label><br>
+              <input id="provFile" type="file" accept=".mobileprovision">
+              <button id="btnUploadProv" class="small btn" style="margin-left:8px">Upload Prov</button>
+            </div>
+
+            <div style="margin-top:12px">
+              <button id="refreshAssets" class="small">Refresh assets</button>
+            </div>
+
+            <div class="field list" id="assetsList"></div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <h3>3) Sign</h3>
+            <div class="field">
+              <label class="muted">Display name (optional)</label>
+              <input id="displayName" placeholder="App display name (optional)" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef6">
+            </div>
+            <div class="field">
+              <label class="muted">Bundle ID (optional override)</label>
+              <input id="bundleId" placeholder="com.example.app (optional)" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef6">
+            </div>
+            <div class="row" style="margin-top:8px">
+              <select id="selIpa" style="flex:1;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#e6eef6"></select>
+              <select id="selP12" style="flex:1;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#e6eef6"></select>
+              <select id="selProv" style="flex:1;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:#e6eef6"></select>
+            </div>
+            <div style="margin-top:10px" class="row">
+              <button id="btnSign" class="btn">Sign & Generate</button>
+              <div id="signMsg" class="muted" style="align-self:center"></div>
+            </div>
+
+            <div class="field" style="margin-top:10px">
+              <h4>Jobs</h4>
+              <div id="jobsList" class="list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Inspector</h3>
+          <div class="muted">Selected asset preview and quick actions</div>
+          <div style="margin-top:12px">
+            <div class="meta">Selected IPA</div>
+            <div id="inspectIpa" style="margin-top:8px" class="muted">-</div>
+            <div class="meta" style="margin-top:12px">Selected Cert</div>
+            <div id="inspectP12" style="margin-top:8px" class="muted">-</div>
+            <div class="meta" style="margin-top:12px">Selected Provision</div>
+            <div id="inspectProv" style="margin-top:8px" class="muted">-</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings" class="tabpane" style="display:none">
+      <div class="grid">
+        <div class="card">
+          <h3>UI Themes</h3>
+          <div class="muted">Choose a theme; changes are local in this demo.</div>
+          <div style="margin-top:8px">
+            <button data-theme="frost" class="small btn themeBtn">Frost</button>
+            <button data-theme="neon" class="small btn themeBtn">Neon</button>
+            <button data-theme="dark" class="small btn themeBtn">Dark</button>
+          </div>
+
+          <h3 style="margin-top:16px">Signer Settings</h3>
+          <div class="muted">Control upload behaviour and certificate management</div>
+          <div style="margin-top:8px">
+            <label class="muted">Allow multiple certificates</label>
+            <div><input id="allowMultiCert" type="checkbox" checked></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Branding</h3>
+          <div class="muted">Customize FROZEN SIGNER appearance</div>
+          <div class="field">
+            <input id="brandName" placeholder="FROZEN SIGNER" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#e6eef6">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>FROZEN SIGNER • Local demo • Place signing server on macOS for real signing</footer>
+</div>
+
+<script>
+const apiBase = '/api/signer.php';
+
+function qs(sel, ctx=document) { return ctx.querySelector(sel); }
+function qsa(sel, ctx=document) { return Array.from(ctx.querySelectorAll(sel)); }
+
+qsa('.tab').forEach(t => {
+  t.addEventListener('click', ()=> {
+    qsa('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    qsa('.tabpane').forEach(p=>p.style.display='none');
+    qs('#'+t.dataset.tab).style.display='block';
+  });
+});
+
+async function fetchJSON(url, opts={}) {
+  const res = await fetch(url, opts);
+  return await res.json();
+}
+
+qs('#registerRepo').onclick = async () => {
+  const url = qs('#repo_url').value.trim();
+  const path = qs('#repo_path').value.trim();
+  const r = await fetchJSON(apiBase + '?action=register_repo', {
+    method:'POST', body: JSON.stringify({repo_url:url, path:path}), headers:{'Content-Type':'application/json'}
+  });
+  qs('#repoMsg').textContent = r.record ? 'Registered' : (r.error || 'error');
+  if (r.record) qs('#repoPreview').textContent = `${r.record.repo_url} / ${r.record.path}`;
+};
+
+qs('#btnUploadIpa').onclick = async ()=>{
+  const f = qs('#ipaFile').files[0];
+  if (!f) return alert('Select an IPA');
+  const fd = new FormData();
+  fd.append('file', f);
+  const r = await fetch(apiBase + '?action=upload_ipa', {method:'POST', body:fd});
+  const j = await r.json();
+  await refreshAssets();
+  qs('#signMsg').textContent = j.ok ? 'Uploaded IPA' : (j.error || 'error');
+};
+
+qs('#btnUploadP12').onclick = async ()=>{
+  const f = qs('#p12File').files[0];
+  if (!f) return alert('Select a P12');
+  const fd = new FormData();
+  fd.append('file', f);
+  fd.append('password', qs('#p12pass').value || '');
+  const r = await fetch(apiBase + '?action=upload_p12', {method:'POST', body:fd});
+  const j = await r.json();
+  await refreshAssets();
+  qs('#signMsg').textContent = j.ok ? 'Uploaded P12' : (j.error || 'error');
+};
+
+qs('#btnUploadProv').onclick = async ()=>{
+  const f = qs('#provFile').files[0];
+  if (!f) return alert('Select a provisioning profile');
+  const fd = new FormData();
+  fd.append('file', f);
+  const r = await fetch(apiBase + '?action=upload_provision', {method:'POST', body:fd});
+  const j = await r.json();
+  await refreshAssets();
+  qs('#signMsg').textContent = j.ok ? 'Uploaded prov' : (j.error || 'error');
+};
+
+qs('#refreshAssets').onclick = refreshAssets;
+
+async function refreshAssets(){
+  const j = await fetchJSON(apiBase + '?action=list_assets');
+  const assets = qs('#assetsList'); assets.innerHTML='';
+  (j.ipas||[]).forEach(i=>{
+    const el = document.createElement('div'); el.className='list-item';
+    el.innerHTML = `<div>${i}<div class="meta">${i}</div></div><div><button class="small" data-ipa="${i}">Select</button></div>`;
+    assets.appendChild(el);
+  });
+  // fill select lists
+  const selIpa = qs('#selIpa'); selIpa.innerHTML='';
+  (j.ipas||[]).forEach(i=> selIpa.appendChild(new Option(i,i)));
+  const selP12 = qs('#selP12'); selP12.innerHTML='';
+  (j.p12s||[]).forEach(i=> selP12.appendChild(new Option(i,i)));
+  const selProv = qs('#selProv'); selProv.innerHTML='';
+  (j.provs||[]).forEach(i=> selProv.appendChild(new Option(i,i)));
+
+  // job list refresh
+  await refreshJobs();
+}
+
+qs('#btnSign').onclick = async ()=>{
+  const ipa = qs('#selIpa').value;
+  const p12 = qs('#selP12').value;
+  const prov = qs('#selProv').value;
+  if (!ipa||!p12||!prov) return alert('Select ipa, p12, and prov');
+  const data = new FormData();
+  data.append('ipa', ipa);
+  data.append('p12', p12);
+  data.append('prov', prov);
+  if (qs('#displayName').value) data.append('display_name', qs('#displayName').value);
+  if (qs('#bundleId').value) data.append('bundle_id', qs('#bundleId').value);
+
+  qs('#signMsg').textContent = 'Signing...';
+  const res = await fetch(apiBase + '?action=sign', {method:'POST', body: data});
+  const j = await res.json();
+  if (j.ok) {
+    qs('#signMsg').textContent = 'Signed: ' + (j.signed_url || 'done');
+    await refreshJobs();
+  } else {
+    qs('#signMsg').textContent = j.error || JSON.stringify(j);
+  }
+};
+
+async function refreshJobs(){
+  // simple directory scan via assets listing (job listing endpoint not implemented on frontend)
+  // For demo: fetch /storage/jobs directory listing not exposed; instead poll an endpoint job_status optionally.
+  // Here: show placeholder
+  const jl = qs('#jobsList'); jl.innerHTML = '<div class="muted">Jobs will appear here after signing. Use Job Status API: ?action=job_status&job=job-xxxx</div>';
+}
+
+window.onload = refreshAssets;
+</script>
+</body>
+</html>
